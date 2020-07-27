@@ -3,12 +3,15 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class GameManager : MonoBehaviour {
-
+    public string stringSeed = "seed string";
+    public bool useStringSeed = true;
+    public int seed;
+    public bool randomizeSeed;
     public static GameManager SharedInstance = null;
 
     public int roomsPassed = 0;
     public int amountOFRoomsInDungeon = 10;
-    public Rooms rooms;
+    public RoomsCollections rooms;
 
     public List<GameObject> roomsEntered;
 
@@ -23,6 +26,19 @@ public class GameManager : MonoBehaviour {
         {
             SharedInstance = this;
         }
+
+        if (useStringSeed)
+        {
+            seed = stringSeed.GetHashCode();
+        }
+
+        if (randomizeSeed)
+        {
+            seed = Random.Range(0, 99999);
+        }
+
+        Random.InitState(seed);
+
     }
 
     public void DeactivatePrevRoom()
