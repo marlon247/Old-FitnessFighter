@@ -13,7 +13,8 @@ public class GameManager : MonoBehaviour {
     public int amountOFRoomsInDungeon = 10;
     public RoomsCollections rooms;
 
-    public List<GameObject> roomsEntered;
+    private CreateMap mapCreator;
+
 
     private void Awake()
     {
@@ -39,11 +40,13 @@ public class GameManager : MonoBehaviour {
 
         Random.InitState(seed);
 
+        mapCreator = GetComponent<CreateMap>();
+
     }
 
-    public void DeactivatePrevRoom()
+    private void Start()
     {
-        roomsEntered[roomsPassed - 1].SetActive(false);
+        mapCreator.GenerateMap();
     }
 
 }

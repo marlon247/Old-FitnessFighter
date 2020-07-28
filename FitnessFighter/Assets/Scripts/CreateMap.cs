@@ -17,6 +17,11 @@ public class CreateMap : MonoBehaviour
 
     void Start()
     {
+    }
+
+
+    public void GenerateMap()
+    {
         map = new Dictionary<Vector2, GameObject>();
         bfsQueue = new Queue<GameObject>();
         RoomsCollections rooms = GameManager.SharedInstance.rooms;
@@ -32,7 +37,7 @@ public class CreateMap : MonoBehaviour
             if (!map.ContainsKey(currRoom.GetComponent<RoomType>().coord))
             {
                 map.Add(currRoom.GetComponent<RoomType>().coord, currRoom);
-                
+
             }
             else
             {
@@ -84,10 +89,20 @@ public class CreateMap : MonoBehaviour
             }
         }
 
+        DrawMap();
         //TODO: if queue still has stuff after reaching max size remove doors by checking the area around
         //      open doors if one side is open and not the other.
     }
 
+    public void DrawMap()
+    {
+        foreach(KeyValuePair<Vector2, GameObject> room in map)
+        {
+            GameObject go = room.Value;
+            Vector3 roomLocation = new Vector3(room.Key.x, 0, room.Key.y);
+            Instantiate(go, roomLocation, Quaternion.identity);
+        }
+    }
 
 }
 
