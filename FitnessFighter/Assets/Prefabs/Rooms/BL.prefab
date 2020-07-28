@@ -720,4 +720,6 @@ MonoBehaviour:
   Right: 0
   Bottom: 1
   Left: 1
+  xScale: 10
+  yScale: 10
   coord: {x: 0, y: 0}

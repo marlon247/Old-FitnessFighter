@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel.Design.Serialization;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -13,20 +14,24 @@ public class CreateMap : MonoBehaviour
     private Queue<GameObject> bfsQueue;
     private GameObject startRoom;
     private GameObject endRoom;
-    private int size = 0;
     private Dictionary<Vector4, GameObject> doorsToRoomMap;
 
     private void Awake()
     {
+        doorsToRoomMap = new Dictionary<Vector4, GameObject>();
         foreach(GameObject room in GameManager.SharedInstance.rooms.rooms)
         {
             doorsToRoomMap.Add(room.GetComponent<RoomType>().doors, room);
         }
     }
 
-    void GeneratesMap()
+    public void GenerateMap()
     {
-        while (!bfsMapCreation()) ;
+        bool validMap = false;
+        while ( !validMap ) 
+        {
+            validMap = bfsMapCreation();
+        };
         DrawMap();
     }
 
@@ -41,9 +46,9 @@ public class CreateMap : MonoBehaviour
         startRoom.GetComponent<RoomType>().coord = new Vector2(0, 0);
         bfsQueue.Enqueue(startRoom);
 
-        while (bfsQueue.Count != 0 && size < 15)
+        while (bfsQueue.Count != 0 && map.Count < 15)
         {
-            size++;
+            
             GameObject currRoom = bfsQueue.Dequeue();
 
             if (!map.ContainsKey(currRoom.GetComponent<RoomType>().coord))
@@ -73,6 +78,7 @@ public class CreateMap : MonoBehaviour
                     {
                         adjRoom = doorsToRoomMap[adjRoomType.doors + new Vector4(0, 0, 1, 0)];
                         adjRoom.GetComponent<RoomType>().coord = adjRoomType.coord;
+                        map[tempCoord] = adjRoom;
                     }
                 }
             }
@@ -95,6 +101,7 @@ public class CreateMap : MonoBehaviour
                     {
                         adjRoom = doorsToRoomMap[adjRoomType.doors + new Vector4(0, 0, 0, 1)];
                         adjRoom.GetComponent<RoomType>().coord = adjRoomType.coord;
+                        map[tempCoord] = adjRoom;
                     }
                 }
             }
@@ -117,6 +124,7 @@ public class CreateMap : MonoBehaviour
                     {
                         adjRoom = doorsToRoomMap[adjRoomType.doors + new Vector4(1, 0, 0, 0)];
                         adjRoom.GetComponent<RoomType>().coord = adjRoomType.coord;
+                        map[tempCoord] = adjRoom;
                     }
                 }
             }
@@ -139,12 +147,15 @@ public class CreateMap : MonoBehaviour
                     {
                         adjRoom = doorsToRoomMap[adjRoomType.doors + new Vector4(0, 1, 0, 0)];
                         adjRoom.GetComponent<RoomType>().coord = adjRoomType.coord;
+                        map[tempCoord] = adjRoom;
                     }
                 }
             }
         }
 
-        if(size != 15)
+
+
+        if(map.Count < 10)
         {
             validMap = false;
         }
@@ -157,7 +168,8 @@ public class CreateMap : MonoBehaviour
         foreach(KeyValuePair<Vector2, GameObject> room in map)
         {
             GameObject go = room.Value;
-            Vector3 roomLocation = new Vector3(room.Key.x, 0, room.Key.y);
+            RoomType rt = go.GetComponent<RoomType>();
+            Vector3 roomLocation = new Vector3(room.Key.x * rt.xScale, 0, room.Key.y * rt.yScale);
             Instantiate(go, roomLocation, Quaternion.identity);
         }
     }

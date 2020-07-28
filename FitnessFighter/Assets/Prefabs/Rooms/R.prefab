@@ -533,6 +533,8 @@ MonoBehaviour:
   Right: 1
   Bottom: 0
   Left: 0
+  xScale: 10
+  yScale: 10
   coord: {x: 0, y: 0}
 --- !u!1 &1883760756537300
 GameObject:
