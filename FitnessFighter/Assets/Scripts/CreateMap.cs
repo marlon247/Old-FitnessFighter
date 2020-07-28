@@ -24,20 +24,16 @@ public class CreateMap : MonoBehaviour
         }
     }
 
-    void Start()
+    void GeneratesMap()
     {
-
-
         while (!bfsMapCreation()) ;
-        //TODO: if queue still has stuff after reaching max size remove doors by checking the area around
-        //      open doors if one side is open and not the other.
+        DrawMap();
     }
-
 
     private bool bfsMapCreation()
     {
         bool validMap = true;
-        
+
         map = new Dictionary<Vector2, GameObject>();
         bfsQueue = new Queue<GameObject>();
         RoomsCollections rooms = GameManager.SharedInstance.rooms;
@@ -156,6 +152,15 @@ public class CreateMap : MonoBehaviour
         return validMap;
     }
 
+    public void DrawMap()
+    {
+        foreach(KeyValuePair<Vector2, GameObject> room in map)
+        {
+            GameObject go = room.Value;
+            Vector3 roomLocation = new Vector3(room.Key.x, 0, room.Key.y);
+            Instantiate(go, roomLocation, Quaternion.identity);
+        }
+    }
 
 }
 
