@@ -28,6 +28,19 @@ public class GameManager : MonoBehaviour {
             SharedInstance = this;
         }
 
+        GenerateSeed();
+
+        mapCreator = GetComponent<CreateMap>();
+
+    }
+
+    private void Start()
+    {
+        mapCreator.GenerateMap();
+    }
+
+    public void GenerateSeed()
+    {
         if (useStringSeed)
         {
             seed = stringSeed.GetHashCode();
@@ -39,14 +52,6 @@ public class GameManager : MonoBehaviour {
         }
 
         Random.InitState(seed);
-
-        mapCreator = GetComponent<CreateMap>();
-
-    }
-
-    private void Start()
-    {
-        mapCreator.GenerateMap();
     }
 
 }

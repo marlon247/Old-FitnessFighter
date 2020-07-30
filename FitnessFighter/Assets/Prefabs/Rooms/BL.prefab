@@ -722,4 +722,4 @@ MonoBehaviour:
   Left: 1
   xScale: 10
   yScale: 10
-  coord: {x: 0, y: 0}
+  roomOpenings: 00000000
