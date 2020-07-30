@@ -3,25 +3,39 @@ using System.Collections.Generic;
 using System.ComponentModel.Design.Serialization;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.Networking;
 using UnityEngine.UIElements;
-
-//using rooms = GameManager.SharedInstance.rooms;
 
 public class CreateMap : MonoBehaviour
 {
-    private Dictionary<Vector2, GameObject> map;
+    private class RoomObject
+    {
+        public GameObject room;
+        public Vector2 coord;
+
+        public RoomObject() { }
+        public RoomObject(GameObject r, Vector2 c)
+        {
+            room = r;
+            coord = c;
+        }
+    }
+
+    private Dictionary<Vector2, RoomObject> map;
     private GameManager gameManager;
-    private Queue<GameObject> bfsQueue;
-    private GameObject startRoom;
-    private GameObject endRoom;
+    private Queue<RoomObject> bfsQueue;
+    private RoomObject startRoom = new RoomObject();
+    private RoomObject endRoom;
     private Dictionary<Vector4, GameObject> doorsToRoomMap;
+
+    
 
     private void Awake()
     {
         doorsToRoomMap = new Dictionary<Vector4, GameObject>();
         foreach(GameObject room in GameManager.SharedInstance.rooms.rooms)
         {
-            doorsToRoomMap.Add(room.GetComponent<RoomType>().doors, room);
+            doorsToRoomMap.Add(room.GetComponent<RoomProperties>().doors, room);
         }
     }
 
@@ -39,123 +53,160 @@ public class CreateMap : MonoBehaviour
     {
         bool validMap = true;
 
-        map = new Dictionary<Vector2, GameObject>();
-        bfsQueue = new Queue<GameObject>();
+        map = new Dictionary<Vector2, RoomObject>();
+        bfsQueue = new Queue<RoomObject>();
         RoomsCollections rooms = GameManager.SharedInstance.rooms;
-        startRoom = rooms.startRooms[Random.Range(0, rooms.startRooms.Count)];
-        startRoom.GetComponent<RoomType>().coord = new Vector2(0, 0);
+        startRoom.room = rooms.startRooms[Random.Range(0, rooms.startRooms.Count)];
+        startRoom.coord = new Vector2(0, 0);
         bfsQueue.Enqueue(startRoom);
 
         while (bfsQueue.Count != 0 && map.Count < 15)
         {
             
-            GameObject currRoom = bfsQueue.Dequeue();
+            RoomObject currRoom = bfsQueue.Dequeue();
 
-            if (!map.ContainsKey(currRoom.GetComponent<RoomType>().coord))
+            if (!map.ContainsKey(currRoom.coord))
             {
-                map.Add(currRoom.GetComponent<RoomType>().coord, currRoom);
+                map.Add(currRoom.coord, currRoom);
             }
             else
             {
                 continue;
             }
 
-            if (currRoom.GetComponent<RoomType>().Top)
+            if (currRoom.room.GetComponent<RoomProperties>().Top)
             {
-                Vector2 tempCoord = currRoom.GetComponent<RoomType>().coord + Vector2.up;
+                Vector2 tempCoord = currRoom.coord + Vector2.up;
                 if (!map.ContainsKey(tempCoord))
                 {
                     GameObject tempRoom = rooms.bottomRooms[Random.Range(0, rooms.bottomRooms.Count)];
-                    tempRoom.GetComponent<RoomType>().coord = tempCoord;
-                    bfsQueue.Enqueue(tempRoom);
+                    bfsQueue.Enqueue(new RoomObject(tempRoom, tempCoord));
                 }
                 else
                 {
-                    GameObject adjRoom = map[tempCoord];
-                    RoomType adjRoomType = adjRoom.GetComponent<RoomType>();
-
-                    if (!adjRoomType.Bottom)
+                    RoomObject adjRoom = map[tempCoord];
+                    if (!adjRoom.room.GetComponent<RoomProperties>().Bottom)
                     {
-                        adjRoom = doorsToRoomMap[adjRoomType.doors + new Vector4(0, 0, 1, 0)];
-                        adjRoom.GetComponent<RoomType>().coord = adjRoomType.coord;
-                        map[tempCoord] = adjRoom;
+                        map[tempCoord] = changeRoomDoor(adjRoom, new Vector4(0, 0, 1, 0), 1);
                     }
                 }
             }
 
-            if (currRoom.GetComponent<RoomType>().Right)
+            if (currRoom.room.GetComponent<RoomProperties>().Right)
             {
-                Vector2 tempCoord = currRoom.GetComponent<RoomType>().coord + Vector2.right;
+                Vector2 tempCoord = currRoom.coord + Vector2.right;
                 if (!map.ContainsKey(tempCoord))
                 {
                     GameObject tempRoom = rooms.leftRooms[Random.Range(0, rooms.leftRooms.Count)];
-                    tempRoom.GetComponent<RoomType>().coord = tempCoord;
-                    bfsQueue.Enqueue(tempRoom);
+                    bfsQueue.Enqueue(new RoomObject(tempRoom, tempCoord));
                 }
                 else
                 {
-                    GameObject adjRoom = map[tempCoord];
-                    RoomType adjRoomType = adjRoom.GetComponent<RoomType>();
-
-                    if (!adjRoomType.Left)
+                    RoomObject adjRoom = map[tempCoord];
+                    if (!adjRoom.room.GetComponent<RoomProperties>().Left)
                     {
-                        adjRoom = doorsToRoomMap[adjRoomType.doors + new Vector4(0, 0, 0, 1)];
-                        adjRoom.GetComponent<RoomType>().coord = adjRoomType.coord;
-                        map[tempCoord] = adjRoom;
+                        map[tempCoord] = changeRoomDoor(adjRoom, new Vector4(0, 0, 0, 1), 1);
                     }
                 }
             }
 
-            if (currRoom.GetComponent<RoomType>().Bottom)
+            if (currRoom.room.GetComponent<RoomProperties>().Bottom)
             {
-                Vector2 tempCoord = currRoom.GetComponent<RoomType>().coord + Vector2.down;
+                Vector2 tempCoord = currRoom.coord + Vector2.down;
                 if (!map.ContainsKey(tempCoord))
                 {
                     GameObject tempRoom = rooms.topRooms[Random.Range(0, rooms.topRooms.Count)];
-                    tempRoom.GetComponent<RoomType>().coord = tempCoord;
-                    bfsQueue.Enqueue(tempRoom);
+                    bfsQueue.Enqueue(new RoomObject(tempRoom, tempCoord));
                 }
                 else
                 {
-                    GameObject adjRoom = map[tempCoord];
-                    RoomType adjRoomType = adjRoom.GetComponent<RoomType>();
-
-                    if (!adjRoomType.Top)
+                    RoomObject adjRoom = map[tempCoord];
+                    if (!adjRoom.room.GetComponent<RoomProperties>().Top) 
                     {
-                        adjRoom = doorsToRoomMap[adjRoomType.doors + new Vector4(1, 0, 0, 0)];
-                        adjRoom.GetComponent<RoomType>().coord = adjRoomType.coord;
-                        map[tempCoord] = adjRoom;
+                        map[tempCoord] = changeRoomDoor(adjRoom, new Vector4(1, 0, 0, 0), 1);
                     }
                 }
             }
 
-            if (currRoom.GetComponent<RoomType>().Left)
+            if (currRoom.room.GetComponent<RoomProperties>().Left)
             {
-                Vector2 tempCoord = currRoom.GetComponent<RoomType>().coord + Vector2.left;
+                Vector2 tempCoord = currRoom.coord + Vector2.left;
                 if (!map.ContainsKey(tempCoord))
                 {
                     GameObject tempRoom = rooms.rightRooms[Random.Range(0, rooms.rightRooms.Count)];
-                    tempRoom.GetComponent<RoomType>().coord = tempCoord;
-                    bfsQueue.Enqueue(tempRoom);
+                    bfsQueue.Enqueue(new RoomObject(tempRoom, tempCoord));
                 }
                 else
                 {
-                    GameObject adjRoom = map[tempCoord];
-                    RoomType adjRoomType = adjRoom.GetComponent<RoomType>();
-
-                    if (!adjRoomType.Right)
+                    RoomObject adjRoom = map[tempCoord];
+                    if (!adjRoom.room.GetComponent<RoomProperties>().Right)
                     {
-                        adjRoom = doorsToRoomMap[adjRoomType.doors + new Vector4(0, 1, 0, 0)];
-                        adjRoom.GetComponent<RoomType>().coord = adjRoomType.coord;
-                        map[tempCoord] = adjRoom;
+                        map[tempCoord] = changeRoomDoor(adjRoom, new Vector4(0, 1, 0, 0), 1);
                     }
                 }
             }
         }
 
+        //remove extra rooms from queue and add close doors to out of map.
+        while(bfsQueue.Count != 0)
+        {
+            RoomObject extraRoom = bfsQueue.Dequeue();
+            RoomProperties extraRoomProperties = extraRoom.room.GetComponent<RoomProperties>();
+
+            if (extraRoomProperties.Top)
+            {
+                Vector2 adjRoomCoord = extraRoom.coord + Vector2.up;
+                if (map.ContainsKey(adjRoomCoord))
+                {
+                    RoomObject adjRoom = map[adjRoomCoord];
+                    if (adjRoom.room.GetComponent<RoomProperties>().Bottom)
+                    {
+                        map[adjRoomCoord] = changeRoomDoor(adjRoom, new Vector4(0, 0, 1, 0), -1);
+                    }
+                }
+            }
+            if (extraRoomProperties.Right)
+            {
+                Vector2 adjRoomCoord = extraRoom.coord + Vector2.right;
+                if (map.ContainsKey(adjRoomCoord))
+                {
+                    RoomObject adjRoom = map[adjRoomCoord];
+                    if (adjRoom.room.GetComponent<RoomProperties>().Left)
+                    {
+                        map[adjRoomCoord] = changeRoomDoor(adjRoom, new Vector4(0, 0, 0, 1), -1);
+                    }
+                }
+            }
+            if (extraRoomProperties.Bottom)
+            {
+                Vector2 adjRoomCoord = extraRoom.coord + Vector2.down;
+                if (map.ContainsKey(adjRoomCoord))
+                {
+                    RoomObject adjRoom = map[adjRoomCoord];
+                    if (adjRoom.room.GetComponent<RoomProperties>().Top)
+                    {
+                        map[adjRoomCoord] = changeRoomDoor(adjRoom, new Vector4(1, 0, 0, 0), -1);
+                    }
+                }
+            }
+            if (extraRoomProperties.Left)
+            {
+                Vector2 adjRoomCoord = extraRoom.coord + Vector2.left;
+                if (map.ContainsKey(adjRoomCoord))
+                {
+                    RoomObject adjRoom = map[adjRoomCoord];
+                    if (adjRoom.room.GetComponent<RoomProperties>().Right)
+                    {
+                        map[adjRoomCoord] = changeRoomDoor(adjRoom, new Vector4(0, 1, 0, 0), -1);
+                    }
+                }
+            }
+
+        }
 
 
-        if(map.Count < 10)
+
+        if(map.Count < 13)
         {
             validMap = false;
         }
@@ -163,12 +214,31 @@ public class CreateMap : MonoBehaviour
         return validMap;
     }
 
+    private RoomObject changeRoomDoor(RoomObject room, Vector4 door, int addRemove)
+    {
+        RoomProperties RoomProperties = room.room.GetComponent<RoomProperties>();
+        Vector4 newDoor = RoomProperties.doors;
+
+        for(int i = 0; i < 4; ++i)
+        {
+            if(addRemove == -1 && RoomProperties.doors[i] == 1 && door[i] == 1) {
+                newDoor[i] = 0;
+            }else if(addRemove == 1 && RoomProperties.doors[i] == 0 && door[i] == 1)
+            {
+                newDoor[i] = 1;
+            }
+        }
+
+        GameObject toReturnRoom = doorsToRoomMap[newDoor];
+        return new RoomObject(toReturnRoom, room.coord);
+    }
+
     public void DrawMap()
     {
-        foreach(KeyValuePair<Vector2, GameObject> room in map)
+        foreach(KeyValuePair<Vector2, RoomObject> room in map)
         {
-            GameObject go = room.Value;
-            RoomType rt = go.GetComponent<RoomType>();
+            GameObject go = room.Value.room;
+            RoomProperties rt = go.GetComponent<RoomProperties>();
             Vector3 roomLocation = new Vector3(room.Key.x * rt.xScale, 0, room.Key.y * rt.yScale);
             Instantiate(go, roomLocation, Quaternion.identity);
         }
