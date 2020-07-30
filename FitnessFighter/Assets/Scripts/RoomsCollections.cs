@@ -15,4 +15,6 @@ public class RoomsCollections : MonoBehaviour {
     public List<GameObject> rightRooms;
     public List<GameObject> topRooms;
     public List<GameObject> bottomRooms;
+    public List<List<GameObject>> dirRooms { get { return new List<List<GameObject>> { topRooms, rightRooms, bottomRooms, leftRooms }; } }
+
 }
