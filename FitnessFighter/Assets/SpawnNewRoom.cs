@@ -12,7 +12,7 @@ public class SpawnNewRoom : MonoBehaviour
         {
             Destroy(go);
         }
-
+        map.rooms.Clear();
         GameManager.SharedInstance.GenerateSeed();
 
         map.GenerateMap();
