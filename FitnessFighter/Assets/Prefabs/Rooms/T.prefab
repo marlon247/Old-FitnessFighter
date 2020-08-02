@@ -143,7 +143,6 @@ MonoBehaviour:
   Left: 0
   xScale: 10
   yScale: 10
-  coord: {x: 0, y: 0}
 --- !u!1 &1430827163397114
 GameObject:
   m_ObjectHideFlags: 0

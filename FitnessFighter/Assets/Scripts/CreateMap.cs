@@ -10,7 +10,8 @@ public class CreateMap : MonoBehaviour
 {
 
     public List<GameObject> rooms;
-
+    
+    private RoomsCollections roomsCollections;
     private Dictionary<Vector2, RoomObject> map;
     private GameManager gameManager;
     private Queue<RoomObject> bfsQueue;
@@ -27,6 +28,8 @@ public class CreateMap : MonoBehaviour
         {
             doorsToRoomMap.Add(room.GetComponent<RoomProperties>().doors, room);
         }
+
+        roomsCollections = GameManager.SharedInstance.rooms;
     }
 
     public void GenerateMap()
@@ -114,7 +117,8 @@ public class CreateMap : MonoBehaviour
         }
 
         List<Vector2> keys = new List<Vector2>(map.Keys );
-        
+        List<Vector2> pBossRooms = new List<Vector2>();
+
         foreach (Vector2 coord in keys)
         {
             for(int i = 0; i < 4; ++i)
@@ -130,16 +134,50 @@ public class CreateMap : MonoBehaviour
                     if (!map.ContainsKey(newCoord))
                     {
                         map[coord] = changeRoomDoor(map[coord], altDoors[i], -1);
+
+                        if (validBossRoom(newCoord)) { pBossRooms.Add(newCoord); }
                     }
                 }
             }
         }
 
+        Vector2 bossCoord = pBossRooms[Random.Range(0, pBossRooms.Count)];
+        addBossRoom(bossCoord);
+
         return validMap;
     }
 
+    private void addBossRoom(Vector2 coord)
+    {
+        for (int i = 0; i < 4; ++i)
+        {
+            Vector2 adjCoord = coord + direction[i];
+
+            if (map.ContainsKey(adjCoord))
+            {
+                GameObject room = roomsCollections.door1[i];
+                RoomObject bossRoom = new RoomObject(room, coord);
+                bossRoom.isBossRoom = true;
+                map.Add(coord, bossRoom);
+
+                map[adjCoord] = changeRoomDoor(map[adjCoord], altDoors[(i + 2) % 4], 1);
+            }
+        }
+    }
+
+    private bool validBossRoom(Vector2 coord)
+    {
+        int adjCount = 0;
+        for(int i = 0; i < 4; ++i)
+        {
+            Vector2 adjCoord = coord + direction[i];
+            if (map.ContainsKey(adjCoord)) { adjCount++; }
+        }
+        return adjCount == 1;
+    }
+
     /*
-     * Params: room: initial room type, door: doors to be modified(1), addRemove: 1 to add -1 to remove
+     * Params: room: initial room type, door: doors to be modified(1), addRemove: 1 to add door, -1 to remove door
      * Return: a new room with door modifications from params  
      */
     private RoomObject changeRoomDoor(RoomObject room, Vector4 door, int addRemove)
@@ -173,8 +211,4 @@ public class CreateMap : MonoBehaviour
             rooms.Add(newRoom);
         }
     }
-
-
-
 }
-

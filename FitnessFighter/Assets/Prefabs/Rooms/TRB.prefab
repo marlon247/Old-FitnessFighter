@@ -236,7 +236,6 @@ MonoBehaviour:
   Left: 0
   xScale: 10
   yScale: 10
-  coord: {x: -30, y: -10}
 --- !u!1 &1386585079312332
 GameObject:
   m_ObjectHideFlags: 0
