@@ -15,6 +15,8 @@ public class GameManager : MonoBehaviour {
 
     private CreateMap mapCreator;
 
+    [SerializeField]
+    GameObject player;
 
     private void Awake()
     {
@@ -34,10 +36,6 @@ public class GameManager : MonoBehaviour {
 
     }
 
-    private void Start()
-    {
-        mapCreator.GenerateMap();
-    }
 
     public void GenerateSeed()
     {
@@ -52,6 +50,22 @@ public class GameManager : MonoBehaviour {
         }
 
         Random.InitState(seed);
+
+        mapCreator = GetComponent<CreateMap>();
+
+    }
+
+
+    private void SpawnPlayer()
+    {
+        Instantiate(player, new Vector3(0, 0, 0), Quaternion.identity);
+    }
+
+
+    private void Start()
+    {
+        mapCreator.GenerateMap();
+        SpawnPlayer();
     }
 
 }
