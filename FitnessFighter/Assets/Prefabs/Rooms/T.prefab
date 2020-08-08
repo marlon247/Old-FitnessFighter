@@ -105,7 +105,7 @@ GameObject:
   - component: {fileID: -4496981037405350194}
   m_Layer: 0
   m_Name: T
-  m_TagString: Untagged
+  m_TagString: BossRoom
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -143,6 +143,7 @@ MonoBehaviour:
   Left: 0
   xScale: 10
   yScale: 10
+  ground: {fileID: 1468518492437890}
 --- !u!1 &1430827163397114
 GameObject:
   m_ObjectHideFlags: 0
