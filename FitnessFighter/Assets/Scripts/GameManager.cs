@@ -13,6 +13,8 @@ public class GameManager : MonoBehaviour {
     public int amountOFRoomsInDungeon = 10;
     public RoomsCollections rooms;
 
+    public Material[] roomMats;
+
     private CreateMap mapCreator;
 
     [SerializeField]

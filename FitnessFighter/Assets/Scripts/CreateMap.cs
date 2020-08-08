@@ -40,6 +40,7 @@ public class CreateMap : MonoBehaviour
             validMap = bfsMapCreation();
         };
         DrawMap();
+        rooms[rooms.Count - 1].GetComponentInChildren<Renderer>().material.color = Color.red;
     }
 
     private bool bfsMapCreation()
@@ -159,8 +160,10 @@ public class CreateMap : MonoBehaviour
                 RoomObject bossRoom = new RoomObject(room, coord);
                 bossRoom.isBossRoom = true;
                 map.Add(coord, bossRoom);
-
+                room.tag = "BossRoom";
                 map[adjCoord] = changeRoomDoor(map[adjCoord], altDoors[(i + 2) % 4], 1);
+
+
             }
         }
     }
